@@ -9,3 +9,4 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
+print("DB URL:", DATABASE_URL)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:drive_now/core/network/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,6 +12,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController(); // 👈 NEW
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -21,16 +24,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose(); // 👈 NEW
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      // Backend call will go here later
-      debugPrint('Registering driver...');
+      final success = await ApiService.registerDriver(
+        fullName: _nameController.text.trim(),
+        email: _emailController.text.trim(), // 👈 NEW
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? 'Account created successfully' : 'Registration failed',
+          ),
+        ),
+      );
     }
   }
 
@@ -56,6 +74,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter full name' : null,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Email Address (NEW)
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Enter email address';
+                  }
+                  final emailRegex = RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  );
+                  if (!emailRegex.hasMatch(value)) {
+                    return 'Enter a valid email';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 16),
