@@ -4,7 +4,7 @@ import psycopg2
 from urllib.parse import urlparse
 
 # Your connection string
-DATABASE_URL = "postgresql://postgres:MTCYFPJcid77r80F@db.hupqccmpudnmfmgymohw.supabase.co:5432/postgres"
+DATABASE_URL = "postgresql://postgres:DWKThEpAfOOIbNhA@db.hupqccmpudnmfmgymohw.supabase.co:5432/postgres"
 
 # Parse the URL
 parsed = urlparse(DATABASE_URL)

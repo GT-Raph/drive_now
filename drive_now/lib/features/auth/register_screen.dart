@@ -12,43 +12,81 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController =
-      TextEditingController(); // 👈 NEW
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose(); // 👈 NEW
+    _emailController.dispose();
     _phoneController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _submit() async {
+  void _submit() {
     if (_formKey.currentState!.validate()) {
-      final success = await ApiService.registerDriver(
-        fullName: _nameController.text.trim(),
-        email: _emailController.text.trim(), // 👈 NEW
-        phone: _phoneController.text.trim(),
-        password: _passwordController.text,
-      );
+      _showOtpMethodDialog();
+    }
+  }
 
-      if (!mounted) return;
+  void _showOtpMethodDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Choose OTP Delivery Method',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success ? 'Account created successfully' : 'Registration failed',
+              ListTile(
+                leading: const Icon(Icons.email),
+                title: const Text('Send OTP via Email'),
+                onTap: () => _sendOtp('email'),
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.sms),
+                title: const Text('Send OTP via SMS'),
+                onTap: () => _sendOtp('sms'),
+              ),
+            ],
           ),
-        ),
-      );
+        );
+      },
+    );
+  }
+
+  Future<void> _sendOtp(String method) async {
+    Navigator.pop(context);
+
+    final success = await ApiService.requestOtp(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim(),
+      method: method,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('OTP sent successfully')));
+
+      Navigator.pushNamed(context, '/otp');
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to send OTP')));
     }
   }
 
@@ -61,7 +99,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
 
@@ -78,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const SizedBox(height: 16),
 
-              // Email Address (NEW)
+              // Email
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -87,22 +124,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Enter email address';
-                  }
+                  if (value == null || value.isEmpty) return 'Enter email';
                   final emailRegex = RegExp(
                     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                   );
-                  if (!emailRegex.hasMatch(value)) {
-                    return 'Enter a valid email';
-                  }
-                  return null;
+                  return emailRegex.hasMatch(value)
+                      ? null
+                      : 'Enter valid email';
                 },
               ),
 
               const SizedBox(height: 16),
 
-              // Phone Number
+              // Phone
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -115,53 +149,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     : null,
               ),
 
-              const SizedBox(height: 16),
-
-              // Password
-              TextFormField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-                validator: (value) => value == null || value.length < 6
-                    ? 'Password must be at least 6 characters'
-                    : null,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Confirm Password
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value != _passwordController.text
-                    ? 'Passwords do not match'
-                    : null,
-              ),
-
               const SizedBox(height: 32),
 
-              // Register Button
               SizedBox(
                 height: 54,
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
@@ -170,33 +162,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Create Account',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  child: const Text('Create Account'),
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Login Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Already have an account?'),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    child: const Text(
-                      'Sign in',
-                      style: TextStyle(
-                        color: Color(0xFFD32F2F),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
