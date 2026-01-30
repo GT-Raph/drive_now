@@ -4,7 +4,7 @@ from app.db.session import SessionLocal
 from app.models.driver import Driver
 from app.schemas.driver import DriverCreate, DriverResponse
 from app.core.security import hash_password
-from app.auth import get_current_driver
+from app.core.security import get_current_driver
 from fastapi import UploadFile, File
 
 router = APIRouter()

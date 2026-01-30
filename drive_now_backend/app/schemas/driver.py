@@ -14,3 +14,7 @@ class DriverResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DriverDashboard(BaseModel):
+    approved: bool
+    vehicle_assigned: bool

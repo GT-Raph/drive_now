@@ -15,7 +15,7 @@ class Driver(Base):
     license_number = Column(String, nullable=True)
     vehicle_type = Column(String, nullable=True)
     profile_completed = Column(Boolean, default=False)
-
+    vehicle_assigned = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
