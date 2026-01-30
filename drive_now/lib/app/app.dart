@@ -9,6 +9,7 @@ class DriveNowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DriveNow',
+      debugShowCheckedModeBanner: false,
       theme: appTheme,
       routes: appRoutes,
       initialRoute: '/',

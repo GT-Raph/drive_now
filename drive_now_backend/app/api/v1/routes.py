@@ -4,6 +4,8 @@ from app.db.session import SessionLocal
 from app.models.driver import Driver
 from app.schemas.driver import DriverCreate, DriverResponse
 from app.core.security import hash_password
+from app.auth import get_current_driver
+from fastapi import UploadFile, File
 
 router = APIRouter()
 
@@ -13,6 +15,24 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@router.get("/dashboard")
+def dashboard(driver=Depends(get_current_driver)):
+    return {
+        "approved": driver.approved,
+        "vehicle_assigned": driver.vehicle_id is not None
+    }
+
+@router.post("/upload-document")
+def upload_document(
+    type: str,
+    file: UploadFile = File(...),
+    driver=Depends(get_current_driver)
+):
+    path = f"uploads/{driver.id}_{type}.jpg"
+    with open(path, "wb") as f:
+        f.write(file.file.read())
+    return {"success": True}
 
 @router.post("/auth/register", response_model=DriverResponse)
 def register_driver(
