@@ -76,7 +76,7 @@ def verify_otp(payload: OtpVerify, db: Session = Depends(get_db)):
 
     return {
         "access_token": token,
-        "profile_completed": driver.profile_completed,
+        "profile_completed": False, # driver.profile_completed (Column missing in DB)
     }
 
 

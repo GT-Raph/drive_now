@@ -6,6 +6,7 @@ import '../features/onboarding/welcome_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/profile/complete_profile_screen.dart';
 import 'package:drive_now/features/auth/otp_verification_screen.dart';
+import '../features/home/home_screen.dart';
 
 final appRoutes = {
   '/': (context) => const SplashDecider(),
@@ -14,5 +15,5 @@ final appRoutes = {
   '/register': (context) => const RegisterScreen(),
   '/otp': (context) => const OtpVerificationScreen(),
   '/complete-profile': (context) => const CompleteProfileScreen(),
-  // '/home': (_) => const HomeScreen(),
+  '/home': (context) => const HomeScreen(),
 };

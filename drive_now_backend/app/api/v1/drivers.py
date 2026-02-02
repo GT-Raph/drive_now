@@ -12,8 +12,7 @@ router = APIRouter(prefix="/api/v1/drivers", tags=["Drivers"])
 from app.db.session import get_db
 
 @router.get("/dashboard", response_model=DriverDashboard)
-def dashboard(driver_id: int, db: Session = Depends(get_db)):
-    driver = db.query(Driver).get(driver_id)
+def dashboard(driver: Driver = Depends(get_current_driver)):
     return DriverDashboard(
         approved=False, # driver.approved_by_admin,
         vehicle_assigned=False # driver.vehicle_assigned

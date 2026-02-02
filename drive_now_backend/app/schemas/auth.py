@@ -14,3 +14,4 @@ class OtpVerify(BaseModel):
 class CompleteProfile(BaseModel):
     license_number: str
     vehicle_type: str
+    vehicle_plate: str = None
