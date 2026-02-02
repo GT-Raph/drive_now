@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.api.v1.routes import drivers, documents, api_router
+from app.api.v1 import drivers, documents
+from app.api.v1.routes import router as api_router
 from app.admin import approvals
 from app.db.session import engine
 from app.db.base import Base
