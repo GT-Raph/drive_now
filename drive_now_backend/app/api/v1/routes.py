@@ -9,18 +9,13 @@ from fastapi import UploadFile, File
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from app.db.session import get_db
 
 @router.get("/dashboard")
 def dashboard(driver=Depends(get_current_driver)):
     return {
-        "approved": driver.approved,
-        "vehicle_assigned": driver.vehicle_id is not None
+        "approved": False, # driver.approved
+        "vehicle_assigned": False # driver.vehicle_id is not None
     }
 
 @router.post("/upload-document")

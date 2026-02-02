@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import drivers, documents
+from app.api.v1 import drivers, documents, auth
 from app.api.v1.routes import router as api_router
 from app.admin import approvals
 from app.db.session import engine
@@ -17,3 +17,4 @@ app.include_router(api_router, prefix="/api/v1")
 app.include_router(drivers.router)
 app.include_router(documents.router)
 app.include_router(approvals.router)
+app.include_router(auth.router)
