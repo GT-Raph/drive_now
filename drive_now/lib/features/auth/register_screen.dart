@@ -67,6 +67,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _sendOtp(String method) async {
     Navigator.pop(context);
+    if (!mounted) return;
+    Navigator.pushNamed(context, '/otp');
 
     final success = await ApiService.requestOtp(
       fullName: _nameController.text.trim(),
