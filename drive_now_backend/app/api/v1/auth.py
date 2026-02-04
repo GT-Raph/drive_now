@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 from app.db.session import get_db
-from app.db.models import Driver, OTP
+from app.models.driver import Driver, OTP
 from app.schemas.auth import OtpRequest, OtpVerify, CompleteProfile
 from app.services.otp import generate_otp, get_expiry, OTP_COOLDOWN_SECONDS
 from app.services.email import send_email_otp
 from app.services.sms import send_sms_otp
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_current_driver, hash_password
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 
@@ -35,10 +35,12 @@ def request_otp(payload: OtpRequest, db: Session = Depends(get_db)):
 
     driver = db.query(Driver).filter(Driver.email == payload.email).first()
     if not driver:
+        # Generate a placeholder password hash since DB requires it (user uses OTP)
         driver = Driver(
             full_name=payload.full_name,
             email=payload.email,
             phone=payload.phone,
+            password_hash=hash_password("otp_user_placeholder"),
         )
         db.add(driver)
 
@@ -74,19 +76,8 @@ def verify_otp(payload: OtpVerify, db: Session = Depends(get_db)):
 
     return {
         "access_token": token,
-        "profile_completed": driver.profile_completed,
+        "profile_completed": False, # driver.profile_completed (Column missing in DB)
     }
 
 
-@router.post("/complete-profile")
-def complete_profile(
-    payload: CompleteProfile,
-    driver_id: int = Depends(),  # will be replaced with JWT dependency
-    db: Session = Depends(get_db),
-):
-    driver = db.query(Driver).get(driver_id)
-    driver.license_number = payload.license_number
-    driver.vehicle_type = payload.vehicle_type
-    driver.profile_completed = True
-    db.commit()
-    return {"message": "Profile completed"}
+

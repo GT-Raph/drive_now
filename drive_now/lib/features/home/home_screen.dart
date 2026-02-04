@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool loading = true;
   Map<String, dynamic>? dashboard;
+  String? error;
 
   @override
   void initState() {
@@ -19,14 +20,50 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadDashboard() async {
-    dashboard = await ApiService.getDashboard();
-    setState(() => loading = false);
+    try {
+      dashboard = await ApiService.getDashboard();
+      setState(() => loading = false);
+    } catch (e) {
+      setState(() {
+        loading = false;
+        error = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Dashboard')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Failed to load dashboard', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 8),
+              Text(error!, style: const TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    loading = true;
+                    error = null;
+                  });
+                  loadDashboard();
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     final approved = dashboard!['approved'];

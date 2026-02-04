@@ -5,7 +5,7 @@ from jose import jwt
 from datetime import datetime, timedelta
 import os
 from sqlalchemy.orm import Session
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, get_db
 from app.models.driver import Driver
 
 SECRET_KEY = os.getenv("JWT_SECRET", "change-me")
@@ -27,12 +27,17 @@ def create_access_token(data: dict, minutes: int = 1440):
 
 def get_current_driver(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(SessionLocal)
+    db: Session = Depends(get_db)
 ):
-    # Simplified implementation - adapt based on your actual auth system
     try:
-        driver_id = int(token)
-    except ValueError:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        driver_id = payload.get("driver_id")
+        if driver_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+            )
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
