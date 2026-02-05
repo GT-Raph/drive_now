@@ -15,7 +15,7 @@ def send_email_otp(email: str, otp: str):
         # Create message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f'Your {settings.SMTP_FROM_NAME} Verification Code'
-        msg['From'] = f'{settings.SMTP_FROM_NAME} <{settings.SMTP_USER}>'
+        msg['From'] = f'{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>'
         msg['To'] = email
         
         # Create HTML email template

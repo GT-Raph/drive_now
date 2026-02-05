@@ -23,6 +23,7 @@ def request_otp(payload: OtpRequest, db: Session = Depends(get_db)):
         db.delete(existing)
 
     otp_code = generate_otp()
+    print(f"✅ [GENERATED OTP] {otp_code} for {payload.email} / {payload.phone}")
 
     otp = OTP(
         email=payload.email,
